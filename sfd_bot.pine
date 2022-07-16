@@ -1,0 +1,51 @@
+// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © .Q
+
+//@version=5
+strategy("strategyα", overlay=false)
+
+_YS = input(2018, "Start Year") 
+_MS = input(1,    "Start Month")
+_DS = input(1,    "Start Day")
+
+_YE = input(2100, "End Year")
+_ME = input(1,    "End Month")
+_DE = input(31,    "End Day")
+
+_TestPeriod() =>
+    _ts = timestamp(_YS, _MS, _DS, 0, 0)
+    _te = timestamp(_YE, _ME, _DE, 0, 0)
+    time >= _ts and time <= _te ? true : false
+//------戦略の実行時間を設定ここまで-------
+patern = input(1, "1以外にするとドテン")
+l_th = input(-0.048,"ロング条件") 
+s_th = input(0.048, "ショート条件")
+ltp_th = input(0.04, "ショートをロングで利確条件")
+stp_th = input(0.0, "ロングをショートで利確条件")
+// sfd判定
+fx = request.security("BITFLYER:FXBTCJPY", timeframe.period, close) 
+btc = request.security("BITFLYER:BTCJPY", timeframe.period, close) 
+sfd = (fx-btc)/fx
+longCondition = l_th > sfd
+shortCondition = s_th < sfd
+if patern == 1
+    closeCondition = (ltp_th > sfd and strategy.position_size<0) or (stp_th < sfd and strategy.position_size>0)
+    if (longCondition)
+        strategy.entry("My Long Entry Id", strategy.long)
+
+
+    if (shortCondition)
+        strategy.entry("My Short Entry Id", strategy.short)
+
+    if closeCondition
+        strategy.close_all(closeCondition,"close")
+else
+    if (longCondition)
+        strategy.entry("My Long Entry Id", strategy.long)
+
+
+    if (shortCondition)
+        strategy.entry("My Short Entry Id", strategy.short)
+plot(sfd)
+plot(l_th,color=color.green)
+plot(s_th,color=color.orange)
